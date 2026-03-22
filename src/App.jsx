@@ -28,11 +28,8 @@ function MapController({ action }) {
   useEffect(() => {
     if (!action) return;
 
+    // スポット選択時はズームしない
     if (action.type === "spot" && action.spot) {
-      map.flyTo([action.spot.lat, action.spot.lng], SPOT_ZOOM, {
-        animate: true,
-        duration: 0.8,
-      });
       return;
     }
 
@@ -325,30 +322,23 @@ export default function App() {
     }
   }, [spotSlug]);
 
-  const handleMarkerClick = (spot) => {
-    if (selectedSpot?.id === spot.id) {
-      setSelectedSpot(null);
-      setMapAction({
-        type: "zoomout-here",
-        timestamp: Date.now(),
-      });
-    } else {
-      setSelectedSpot(spot);
-      setMapAction({
-        type: "spot",
-        spot,
-        timestamp: Date.now(),
-      });
-    }
-  };
-
-  const handleClosePanel = () => {
+ const handleMarkerClick = (spot) => {
+  if (selectedSpot?.id === spot.id) {
     setSelectedSpot(null);
-    setMapAction({
-      type: "zoomout-here",
-      timestamp: Date.now(),
-    });
-  };
+    return;
+  }
+
+  setSelectedSpot(spot);
+  setMapAction({
+    type: "spot",
+    spot,
+    timestamp: Date.now(),
+  });
+};
+
+const handleClosePanel = () => {
+  setSelectedSpot(null);
+};
 
   return (
     <div className="app-shell">
