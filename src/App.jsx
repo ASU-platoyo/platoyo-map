@@ -171,7 +171,21 @@ function GuidePanel({ spot, onClose }) {
     return (
       <aside className="guide-panel empty">
         <div className="guide-empty-box">
-          <h2>ぷらとよMAP</h2>
+          <h2>ぷらとよマップ</h2>
+          <p>
+            地図上のスポットをタップすると、
+            とよなとちさとが案内してくれます。
+          </p>
+        </div>
+      </aside>
+    );
+  }
+
+  if (!spot) {
+    return (
+      <aside className="guide-panel empty">
+        <div className="guide-empty-box">
+          <h2>ぷらとよマップ</h2>
           <p>地図上のスポットをクリックすると、</p>
           <p>とよなとちさとが案内してくれます。</p>
         </div>
