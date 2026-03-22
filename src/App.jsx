@@ -17,7 +17,7 @@ const SPOT_ZOOM = 18;
 /* ===== 現在地アイコン ===== */
 const userIcon = L.divIcon({
   className: "user-location",
-  html: `<div class="user-dot"></div>`,
+  html: `<div class="user-location-dot"></div>`,
   iconSize: [20, 20],
 });
 
@@ -79,21 +79,12 @@ function SpotBuilder() {
   image: "/spots/sample.jpg",
   description: "ここに説明を入れる",
   links: [
-    {
-      type: "archive",
-      label: "ぷらとよアーカイブを見る",
-      url: ""
-    },
-    {
-      type: "walk",
-      label: "散歩記事を見る",
-      url: "",
-      thumbnail: "/thumbnails/sample.jpg"
-    }
+    { type: "archive", label: "ぷらとよアーカイブを見る", url: "" },
+    { type: "walk", label: "散歩記事を見る", url: "", thumbnail: "/thumbnails/sample.jpg" }
   ],
   guide: {
     character: "とよな",
-    image: "/characters/toyana.png",
+    image: "/characters/toyona.png",
     comment: "ここはこんな場所やで！"
   }
 },`;
@@ -112,27 +103,17 @@ function SpotBuilder() {
   if (!clickedLatLng) return null;
 
   return (
-    <Popup position={[clickedLatLng.lat, clickedLatLng.lng]}>
-      <div style={{ minWidth: "240px" }}>
-        <strong>スポット雛形コピー済</strong>
-        <p style={{ margin: "8px 0" }}>
+    <Marker position={[clickedLatLng.lat, clickedLatLng.lng]}>
+      <Popup>
+        <div>
+          <strong>スポット雛形コピー済</strong>
+          <br />
           緯度: {clickedLatLng.lat}
           <br />
           経度: {clickedLatLng.lng}
-        </p>
-
-        <textarea
-          readOnly
-          value={clickedLatLng.text}
-          style={{
-            width: "100%",
-            height: "180px",
-            fontSize: "12px",
-            boxSizing: "border-box",
-          }}
-        />
-      </div>
-    </Popup>
+        </div>
+      </Popup>
+    </Marker>
   );
 }
 
@@ -175,13 +156,15 @@ function UserLocation({ setUserLocation, shouldAutoFly }) {
   );
 }
 
-/* ===== 右パネル ===== */
+/* ===== 右パネル / スマホではボトムシート ===== */
 function GuidePanel({ spot, onClose }) {
   const panelRef = useRef(null);
+  const [mobileExpanded, setMobileExpanded] = useState(false);
 
   useEffect(() => {
     if (!spot || !panelRef.current) return;
     panelRef.current.scrollTop = 0;
+    setMobileExpanded(false);
   }, [spot]);
 
   if (!spot) {
@@ -197,7 +180,19 @@ function GuidePanel({ spot, onClose }) {
   }
 
   return (
-    <aside className="guide-panel" ref={panelRef}>
+    <aside
+      ref={panelRef}
+      className={`guide-panel ${mobileExpanded ? "mobile-expanded" : "mobile-collapsed"}`}
+    >
+      <button
+        type="button"
+        className="guide-sheet-handle"
+        onClick={() => setMobileExpanded((prev) => !prev)}
+        aria-label={mobileExpanded ? "案内をたたむ" : "案内を広げる"}
+      >
+        <span className="guide-sheet-bar" />
+      </button>
+
       <button className="guide-close" onClick={onClose} aria-label="案内を閉じる">
         ×
       </button>
@@ -290,22 +285,22 @@ export default function App() {
   const [userLocation, setUserLocation] = useState(null);
 
   const spotSlug = useMemo(() => {
-  const url = new URL(window.location.href);
+    const url = new URL(window.location.href);
 
-  // 1. まず ?spot=machikaneyama を優先
-  const querySpot = url.searchParams.get("spot");
-  if (querySpot) return querySpot;
+    // 1. まず ?spot=machikaneyama を優先
+    const querySpot = url.searchParams.get("spot");
+    if (querySpot) return querySpot;
 
-  // 2. なければ従来どおり /machikaneyama を読む
-  const path = url.pathname.replace(/\/+$/, "");
-  const parts = path.split("/");
-  const lastPart = parts[parts.length - 1];
+    // 2. なければ従来どおり /machikaneyama を読む
+    const path = url.pathname.replace(/\/+$/, "");
+    const parts = path.split("/");
+    const lastPart = parts[parts.length - 1];
 
-  // ルート直下や platoyo-map だけの時は無効扱い
-  if (!lastPart || lastPart === "platoyo-map") return "";
+    // ルート直下や platoyo-map だけの時は無効扱い
+    if (!lastPart || lastPart === "platoyo-map") return "";
 
-  return lastPart;
-}, []);
+    return lastPart;
+  }, []);
 
   const hasSpotParam = !!spotSlug;
 
@@ -313,7 +308,6 @@ export default function App() {
     if (!spotSlug) return;
 
     const foundSpot = spots.find((spot) => spot.slug === spotSlug);
-
     if (foundSpot) {
       setSelectedSpot(foundSpot);
       setMapAction({
@@ -324,23 +318,23 @@ export default function App() {
     }
   }, [spotSlug]);
 
- const handleMarkerClick = (spot) => {
-  if (selectedSpot?.id === spot.id) {
+  const handleMarkerClick = (spot) => {
+    if (selectedSpot?.id === spot.id) {
+      setSelectedSpot(null);
+      return;
+    }
+
+    setSelectedSpot(spot);
+    setMapAction({
+      type: "spot",
+      spot,
+      timestamp: Date.now(),
+    });
+  };
+
+  const handleClosePanel = () => {
     setSelectedSpot(null);
-    return;
-  }
-
-  setSelectedSpot(spot);
-  setMapAction({
-    type: "spot",
-    spot,
-    timestamp: Date.now(),
-  });
-};
-
-const handleClosePanel = () => {
-  setSelectedSpot(null);
-};
+  };
 
   return (
     <div className="app-shell">
@@ -358,7 +352,7 @@ const handleClosePanel = () => {
             }
           }}
         >
-          📍 現在地
+          現在地
         </button>
 
         <MapContainer
@@ -368,7 +362,7 @@ const handleClosePanel = () => {
           className="leaflet-map"
         >
           <TileLayer
-            attribution='&copy; OpenStreetMap contributors'
+            attribution='© OpenStreetMap contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
@@ -378,7 +372,6 @@ const handleClosePanel = () => {
           />
 
           {ENABLE_SPOT_BUILDER && <SpotBuilder />}
-
           <MapController action={mapAction} />
 
           {spots.map((spot) => (
