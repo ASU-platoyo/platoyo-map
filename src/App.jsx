@@ -291,9 +291,21 @@ export default function App() {
   const [userLocation, setUserLocation] = useState(null);
 
   const spotSlug = useMemo(() => {
-  const path = window.location.pathname;
+  const url = new URL(window.location.href);
+
+  // 1. まず ?spot=machikaneyama を優先
+  const querySpot = url.searchParams.get("spot");
+  if (querySpot) return querySpot;
+
+  // 2. なければ従来どおり /machikaneyama を読む
+  const path = url.pathname.replace(/\/+$/, "");
   const parts = path.split("/");
-  return parts[parts.length - 1];
+  const lastPart = parts[parts.length - 1];
+
+  // ルート直下や platoyo-map だけの時は無効扱い
+  if (!lastPart || lastPart === "platoyo-map") return "";
+
+  return lastPart;
 }, []);
 
   const hasSpotParam = !!spotSlug;
