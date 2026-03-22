@@ -1,5 +1,5 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./index.css";
@@ -177,6 +177,13 @@ function UserLocation({ setUserLocation, shouldAutoFly }) {
 
 /* ===== 右パネル ===== */
 function GuidePanel({ spot, onClose }) {
+  const panelRef = useRef(null);
+
+  useEffect(() => {
+    if (!spot || !panelRef.current) return;
+    panelRef.current.scrollTop = 0;
+  }, [spot]);
+
   if (!spot) {
     return (
       <aside className="guide-panel empty">
@@ -190,7 +197,7 @@ function GuidePanel({ spot, onClose }) {
   }
 
   return (
-    <aside className="guide-panel">
+    <aside className="guide-panel" ref={panelRef}>
       <button className="guide-close" onClick={onClose} aria-label="案内を閉じる">
         ×
       </button>
@@ -202,11 +209,7 @@ function GuidePanel({ spot, onClose }) {
 
       {spot.image && (
         <div className="guide-photo-wrap">
-          <img
-            src={spot.image}
-            alt={spot.name}
-            className="guide-photo"
-          />
+          <img src={spot.image} alt={spot.name} className="guide-photo" />
         </div>
       )}
 
@@ -216,7 +219,7 @@ function GuidePanel({ spot, onClose }) {
       </div>
 
       {spot.guide && (
-        <div className={`guide-character-box`}>
+        <div className="guide-character-box">
           <img
             src={spot.guide.image}
             alt={`${spot.guide.character}の案内`}
@@ -235,7 +238,6 @@ function GuidePanel({ spot, onClose }) {
             .filter((link) => link.type !== "walk")
             .map((link, index) => {
               const isDisabled = !link.url;
-
               return (
                 <a
                   key={index}
