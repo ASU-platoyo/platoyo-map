@@ -167,31 +167,21 @@ function GuidePanel({ spot, onClose }) {
     setMobileExpanded(false);
   }, [spot]);
 
-  if (!spot) {
-    return (
-      <aside className="guide-panel empty">
-        <div className="guide-empty-box">
-          <h2>ぷらとよマップ</h2>
-          <p>
-            地図上のスポットをタップすると、
-            とよなとちさとが案内してくれます。
-          </p>
-        </div>
-      </aside>
-    );
-  }
+const isMobile = window.innerWidth <= 768;
 
-  if (!spot) {
-    return (
-      <aside className="guide-panel empty">
-        <div className="guide-empty-box">
-          <h2>ぷらとよマップ</h2>
-          <p>地図上のスポットをクリックすると、</p>
-          <p>とよなとちさとが案内してくれます。</p>
-        </div>
-      </aside>
-    );
-  }
+if (!spot) {
+  return (
+    <aside className="guide-panel empty">
+      <div className="guide-empty-box">
+        <h2>ぷらとよマップ</h2>
+        <p>
+          地図上のスポットを{isMobile ? "タップ" : "クリック"}すると、
+          とよなとちさとが案内してくれます。
+        </p>
+      </div>
+    </aside>
+  );
+}
 
   return (
     <aside
