@@ -1,0 +1,87 @@
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
+import { useState } from "react";
+import "leaflet/dist/leaflet.css";
+import "./index.css";
+import { spots } from "./data/spots.js";
+
+import L from "leaflet";
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png?url";
+import markerIcon from "leaflet/dist/images/marker-icon.png?url";
+import markerShadow from "leaflet/dist/images/marker-shadow.png?url";
+
+const defaultIcon = L.icon({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+
+function ClickMarker() {
+  const [position, setPosition] = useState(null);
+
+  useMapEvents({
+    click(e) {
+      console.log(e.latlng);
+      setPosition(e.latlng);
+    },
+  });
+
+  return position ? (
+    <Marker position={[position.lat, position.lng]} icon={defaultIcon}>
+      <Popup>
+        {position.lat.toFixed(6)}, {position.lng.toFixed(6)}
+      </Popup>
+    </Marker>
+  ) : null;
+}
+
+function App() {
+  const [filter, setFilter] = useState("全部");
+
+  const filteredSpots =
+    filter === "全部"
+      ? spots
+      : spots.filter((spot) => spot.category === filter);
+
+  return (
+    <div className="map-page">
+      <div className="map-toolbar">
+        <button className="mapButton" onClick={() => setFilter("全部")}>全部</button>
+        <button className="mapButton" onClick={() => setFilter("歴史")}>歴史</button>
+        <button className="mapButton" onClick={() => setFilter("公園")}>公園</button>
+      </div>
+
+      <MapContainer
+        center={[34.78, 135.47]}
+        zoom={13}
+        className="map-container"
+      >
+        <TileLayer
+          attribution="&copy; OpenStreetMap contributors"
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+
+        {filteredSpots.map((spot) => (
+          <Marker
+            key={spot.id}
+            position={[spot.lat, spot.lng]}
+            icon={defaultIcon}
+          >
+            <Popup>
+              <strong>{spot.name}</strong><br />
+              {spot.category}<br />
+              <a href={spot.url} target="_blank" rel="noreferrer">
+                記事を見る
+              </a>
+            </Popup>
+          </Marker>
+        ))}
+
+        <ClickMarker />
+      </MapContainer>
+    </div>
+  );
+}
+
+export default App;
