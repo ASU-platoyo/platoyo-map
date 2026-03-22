@@ -14,7 +14,7 @@ export const spots = [
       {
         type: "archive",
         label: "ぷらとよアーカイブを見る",
-        url: "https://example.com/archive"
+        url: "https://platto-toyonaka.com/2026/03/22/archive-shimakumayama/"
       },
       {
         type: "walk",
